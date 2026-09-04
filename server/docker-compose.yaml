@@ -21,6 +21,7 @@ services:
       neo4j:
         condition: service_healthy
     environment:
+      - PYTHONPATH=/app:/app/packages  # Auto-loads sitecustomize.py thread diagnostics
       - PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
       - PYTHONUNBUFFERED=1  # Ensures Python output is sent straight to terminal
 

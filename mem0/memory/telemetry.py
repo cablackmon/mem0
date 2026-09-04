@@ -53,15 +53,10 @@ class AnonymousTelemetry:
 
 
 client_telemetry = AnonymousTelemetry()
+memory_telemetry = client_telemetry
 
 
 def capture_event(event_name, memory_instance, additional_data=None):
-    oss_telemetry = AnonymousTelemetry(
-        vector_store=memory_instance._telemetry_vector_store
-        if hasattr(memory_instance, "_telemetry_vector_store")
-        else None,
-    )
-
     event_data = {
         "collection": memory_instance.collection_name,
         "vector_size": memory_instance.embedding_model.config.embedding_dims,
@@ -77,7 +72,7 @@ def capture_event(event_name, memory_instance, additional_data=None):
     if additional_data:
         event_data.update(additional_data)
 
-    oss_telemetry.capture_event(event_name, event_data)
+    memory_telemetry.capture_event(event_name, event_data)
 
 
 def capture_client_event(event_name, instance, additional_data=None):

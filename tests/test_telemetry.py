@@ -1,5 +1,6 @@
 import os
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -33,3 +34,28 @@ def test_telemetry_disabled():
 
 def test_telemetry_default_enabled():
     assert use_telemetry() is True
+
+
+def test_capture_event_reuses_memory_telemetry_client():
+    from mem0.memory import telemetry
+
+    memory_instance = SimpleNamespace(
+        collection_name="test",
+        embedding_model=SimpleNamespace(config=SimpleNamespace(embedding_dims=3)),
+        graph=object(),
+        vector_store=object(),
+        llm=object(),
+        config=SimpleNamespace(graph_store=SimpleNamespace(config={})),
+        api_version="v1.1",
+    )
+    shared_client = MagicMock()
+
+    with (
+        patch.object(telemetry, "memory_telemetry", shared_client),
+        patch.object(telemetry, "AnonymousTelemetry") as telemetry_constructor,
+    ):
+        telemetry.capture_event("mem0.search", memory_instance)
+        telemetry.capture_event("mem0.search", memory_instance)
+
+    telemetry_constructor.assert_not_called()
+    assert shared_client.capture_event.call_count == 2
